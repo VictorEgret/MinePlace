@@ -1,0 +1,6 @@
+name: MinePlace
+version: '${project.version}'
+main: greentor.mineplace.Mineplace
+api-version: 1.18
+authors: [ Greentor ]
+description: Plugin s/o reddit.com/r/place
