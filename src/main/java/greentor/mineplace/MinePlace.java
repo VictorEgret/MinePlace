@@ -11,7 +11,7 @@ public final class MinePlace extends JavaPlugin {
     }
 
     private void registerListeners() {
-        Listener[] listeners = {new PlayerListener(this)};
+        Listener[] listeners = {new PlayerListener()};
 
         for (Listener listener : listeners) {
             this.getServer().getPluginManager().registerEvents(listener, this);
