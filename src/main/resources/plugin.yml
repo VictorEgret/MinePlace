@@ -1,6 +1,6 @@
 name: MinePlace
-version: '${project.version}'
+version: ${git.commit.id.abbrev}
 main: greentor.mineplace.Mineplace
 api-version: 1.18
 authors: [ Greentor ]
-description: Lil plugin
+description: '${description}'
