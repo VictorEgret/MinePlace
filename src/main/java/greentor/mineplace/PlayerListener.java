@@ -17,8 +17,8 @@ public class PlayerListener implements Listener {
 
     private static final long ONE_MINUTE = 20 * 60;
 
-    private static HashMap<UUID, Integer> interactions = new HashMap<>();
-    private static HashMap<UUID, Integer> tntPlaced = new HashMap<>();
+    private static final HashMap<UUID, Integer> interactions = new HashMap<>();
+    private static final HashMap<UUID, Integer> tntPlaced = new HashMap<>();
 
     public PlayerListener(MinePlace plugin) {
         this.plugin = plugin;
