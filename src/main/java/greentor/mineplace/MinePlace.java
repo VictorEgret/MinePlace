@@ -1,16 +1,13 @@
 package greentor.mineplace;
 
-import greentor.mineplace.listeners.PlayerListener;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Mineplace extends JavaPlugin {
+public final class MinePlace extends JavaPlugin {
 
     @Override
     public void onEnable() {
-
         registerListeners();
-
     }
 
     private void registerListeners() {
@@ -22,6 +19,5 @@ public final class Mineplace extends JavaPlugin {
     }
 
     @Override
-    public void onDisable() {
-    }
+    public void onDisable() {}
 }

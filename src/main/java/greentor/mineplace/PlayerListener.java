@@ -1,6 +1,5 @@
-package greentor.mineplace.listeners;
+package greentor.mineplace;
 
-import greentor.mineplace.Mineplace;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -14,13 +13,14 @@ import java.util.UUID;
 
 public class PlayerListener implements Listener {
 
-    private final Mineplace plugin;
+    private final MinePlace plugin;
 
-    private static HashMap<UUID, Integer> blocksPlaced = new HashMap<>();
+    private static final long ONE_MINUTE = 20 * 60;
+
+    private static HashMap<UUID, Integer> interactions = new HashMap<>();
     private static HashMap<UUID, Integer> tntPlaced = new HashMap<>();
-    private static HashMap<UUID, Integer> bucketsPlaced = new HashMap<>();
 
-    public PlayerListener(Mineplace plugin) {
+    public PlayerListener(MinePlace plugin) {
         this.plugin = plugin;
     }
 
@@ -28,7 +28,9 @@ public class PlayerListener implements Listener {
     public void onPlace(BlockPlaceEvent e) {
 
         if (e.getBlock().getType() == Material.TNT) {
+
             if (e.getPlayer().hasPermission("default.use")) {
+
                 if (tntPlaced.containsKey(e.getPlayer().getUniqueId())) {
                     if (tntPlaced.get(e.getPlayer().getUniqueId()) == 1) {
                         e.setCancelled(true);
@@ -37,15 +39,17 @@ public class PlayerListener implements Listener {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                             tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                            }, 20 * 60 * 60 * 24L);
+                            }, ONE_MINUTE * 60 * 24);
                     }
                 } else {
                     tntPlaced.put(e.getPlayer().getUniqueId(), 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                    }, 20 * 60 * 60 * 24L);
+                    }, ONE_MINUTE * 60 * 24);
                 }
+
             } else if (e.getPlayer().hasPermission("constructeur.use")) {
+
                 if (tntPlaced.containsKey(e.getPlayer().getUniqueId())) {
                     if (tntPlaced.get(e.getPlayer().getUniqueId()) == 1) {
                         e.setCancelled(true);
@@ -54,15 +58,17 @@ public class PlayerListener implements Listener {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                             tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                        }, 20 * 60 * 60L);
+                        }, ONE_MINUTE * 60);
                     }
                 } else {
                     tntPlaced.put(e.getPlayer().getUniqueId(), 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                    }, 20 * 60 * 60L);
+                    }, ONE_MINUTE * 60);
                 }
+
             } else if (e.getPlayer().hasPermission("ingenieur.use")) {
+
                 if (tntPlaced.containsKey(e.getPlayer().getUniqueId())) {
                     if (tntPlaced.get(e.getPlayer().getUniqueId()) == 1) {
                         e.setCancelled(true);
@@ -71,15 +77,17 @@ public class PlayerListener implements Listener {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                             tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                        }, 20 * 60 * 10L);
+                        }, ONE_MINUTE * 10);
                     }
                 } else {
                     tntPlaced.put(e.getPlayer().getUniqueId(), 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                    }, 20 * 60 * 10L);
+                    }, ONE_MINUTE * 10);
                 }
+
             } else if (e.getPlayer().hasPermission("architecte.use")) {
+
                 if (tntPlaced.containsKey(e.getPlayer().getUniqueId())) {
                     if (tntPlaced.get(e.getPlayer().getUniqueId()) == 1) {
                         e.setCancelled(true);
@@ -88,139 +96,124 @@ public class PlayerListener implements Listener {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                             tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                        }, 20 * 60L);
+                        }, ONE_MINUTE);
                     }
                 } else {
                     tntPlaced.put(e.getPlayer().getUniqueId(), 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
                         tntPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                    }, 20 * 60L);
+                    }, ONE_MINUTE);
                 }
             }
-        } else {
-            if (blocksPlaced.containsKey(e.getPlayer().getUniqueId())) {
+        } else { // Si le joueur ne pose pas de TNT
+            if (interactions.containsKey(e.getPlayer().getUniqueId())) {
+
                 if (e.getPlayer().hasPermission("default.use")) {
 
-                    if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 5) {
+                    if (interactions.get(e.getPlayer().getUniqueId()) == 5) {
                         e.setCancelled(true);
                         e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                     } else {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                            blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                        }, 20 * 60L);
+                            interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                        }, ONE_MINUTE);
                     }
 
                 } else if (e.getPlayer().hasPermission("constructeur.use")) {
 
-                    if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 10) {
+                    if (interactions.get(e.getPlayer().getUniqueId()) == 10) {
                         e.setCancelled(true);
                         e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                     } else {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                            blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                        }, 20 * 60L);
+                            interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                        }, ONE_MINUTE);
                     }
 
                 } else if (e.getPlayer().hasPermission("ingenieur.use")) {
 
-                    if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 20) {
+                    if (interactions.get(e.getPlayer().getUniqueId()) == 20) {
                         e.setCancelled(true);
                         e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                     } else {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                            blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                        }, 20 * 60L);
+                            interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                        }, ONE_MINUTE);
                     }
                 }
-            } else {
+            } else { // Première interaction
                 if (e.getPlayer().isOp() || e.getPlayer().hasPermission("architecte.use")) return;
-                blocksPlaced.put(e.getPlayer().getUniqueId(), 1);
+                interactions.put(e.getPlayer().getUniqueId(), 1);
                 plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                    blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                }, 20 * 60L);
+                    interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                }, ONE_MINUTE);
             }
         }
     }
 
     @EventHandler
     public void onWaterLava(PlayerBucketEmptyEvent e) {
+        if (e.getPlayer().isOp()) return;
         e.setCancelled(true);
-        /*if (e.getPlayer().hasPermission("default.use") || e.getPlayer().hasPermission("constructeur.use") || e.getPlayer().hasPermission("ingenieur.use") || ) {
-            e.setCancelled(true);
-            e.getPlayer().sendMessage(ChatColor.RED + "Tu dois avoir le grade architecte pour pouvoir utiliser ça");
-            return;
-        }
-        if (bucketsPlaced.containsKey(e.getPlayer().getUniqueId())) {
-            if (bucketsPlaced.get(e.getPlayer().getUniqueId()) == 1) {
-                e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.RED + "Tu a atteint la limite 'utilisation");
-            } else {
-                bucketsPlaced.replace(e.getPlayer().getUniqueId(), 1);
-                plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                    bucketsPlaced.replace(e.getPlayer().getUniqueId(), 0);
-                }, 20*60L);
-            }
-        } else {
-            bucketsPlaced.put(e.getPlayer().getUniqueId(), 1);
-            plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                bucketsPlaced.replace(e.getPlayer().getUniqueId(), 0);
-            }, 20*60L);
-        }*/
     }
 
     @EventHandler
     public void onBreak(BlockBreakEvent e) {
-        if (blocksPlaced.containsKey(e.getPlayer().getUniqueId())) {
+        if (interactions.containsKey(e.getPlayer().getUniqueId())) {
+
             if (e.getPlayer().hasPermission("default.use")) {
-                if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 5) {
+                if (interactions.get(e.getPlayer().getUniqueId()) == 5) {
                     e.setCancelled(true);
                     e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                 } else {
-                    blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                    interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                    }, 20*60L);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                    }, ONE_MINUTE);
                 }
+
             } else if (e.getPlayer().hasPermission("constructeur.use")) {
-                if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 10) {
+                if (interactions.get(e.getPlayer().getUniqueId()) == 10) {
                     e.setCancelled(true);
                     e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                 } else {
-                    blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                    interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                    }, 20*60L);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                    }, ONE_MINUTE);
                 }
+
             } else if (e.getPlayer().hasPermission("ingenieur.use")) {
-                if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 20) {
+                if (interactions.get(e.getPlayer().getUniqueId()) == 20) {
                     e.setCancelled(true);
                     e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                 } else {
-                    blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                    interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                    }, 20*60L);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                    }, ONE_MINUTE);
                 }
+
             } else if (e.getPlayer().hasPermission("architecte.use")) {
-                if (blocksPlaced.get(e.getPlayer().getUniqueId()) == 20) {
+                if (interactions.get(e.getPlayer().getUniqueId()) == 20) {
                     e.setCancelled(true);
                     e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte");
                 } else {
-                    blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) + 1);
+                    interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) + 1);
                     plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                        blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-                    }, 20*60L);
+                        interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+                    }, ONE_MINUTE);
                 }
             }
-        } else {
+        } else { // Première interaction
             if (e.getPlayer().isOp()) return;
-            blocksPlaced.put(e.getPlayer().getUniqueId(), 1);
+            interactions.put(e.getPlayer().getUniqueId(), 1);
             plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                blocksPlaced.replace(e.getPlayer().getUniqueId(), blocksPlaced.get(e.getPlayer().getUniqueId()) - 1);
-            }, 20*60L);
+                interactions.replace(e.getPlayer().getUniqueId(), interactions.get(e.getPlayer().getUniqueId()) - 1);
+            }, ONE_MINUTE);
         }
     }
 }
