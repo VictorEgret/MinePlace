@@ -1,12 +1,19 @@
 package greentor.mineplace;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.defaults.VersionCommand;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.weather.WeatherChangeEvent;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -111,8 +118,9 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent e) {
+        if (e.isCancelled()) return;
         if (e.getPlayer().hasPermission("default.use")) {
 
             handleBlockBreak(e, ONE_MINUTE_MILLIS , 5);
@@ -130,5 +138,25 @@ public class PlayerListener implements Listener {
             handleBlockBreak(e, ONE_MINUTE_MILLIS, 20);
 
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onJoin(PlayerJoinEvent e) {
+        e.setJoinMessage(ChatColor.GREEN + "[" + ChatColor.DARK_GRAY + "+" + ChatColor.GREEN + "] " + e.getPlayer().getDisplayName());
+        if (!e.getPlayer().hasPlayedBefore()) {
+            Location spawn = e.getPlayer().getWorld().getSpawnLocation();
+            spawn.setYaw(-90F);
+            e.getPlayer().teleport(spawn);
+        }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        e.setQuitMessage(ChatColor.GREEN + "[" + ChatColor.RED + "-" + ChatColor.GREEN + "] " + e.getPlayer().getDisplayName());
+    }
+
+    @EventHandler
+    public void onWeatherChange(WeatherChangeEvent event) {
+        event.setCancelled(true);
     }
 }

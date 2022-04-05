@@ -4,3 +4,15 @@ main: greentor.mineplace.MinePlace
 api-version: 1.18
 authors: [ Greentor ]
 description: ${description}
+commands:
+  site:
+    usage: "/<command>"
+    description: Envoie le lien du site du serveur
+
+  discord:
+    usage: "/<command>"
+    description: Envoie le lien du discord du serveur
+
+  spawn:
+    usage: "/<command>"
+    description: Te téléporte au spawn
