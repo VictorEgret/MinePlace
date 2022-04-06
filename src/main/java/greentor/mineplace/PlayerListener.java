@@ -3,12 +3,10 @@ package greentor.mineplace;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.defaults.VersionCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -38,20 +36,19 @@ public class PlayerListener implements Listener {
         return formatter.format(delay - (System.currentTimeMillis() - minimum));
     }
 
-    private void handleBlockPlace(BlockPlaceEvent e, long waitTime, int placeLimit) {
+    private void handleBlockPlace(BlockPlaceEvent e, long tntWaitTime, int placeLimit) {
         if (e.getBlock().getType() == Material.TNT) {
             if (tntPlaced.containsKey(e.getPlayer().getUniqueId())) {
                 ArrayList<Long> playerTnt = tntPlaced.get(e.getPlayer().getUniqueId());
-                deleteExpired(playerTnt, waitTime);
+                deleteExpired(playerTnt, tntWaitTime);
                 if (playerTnt.size() == 1) {
                     e.setCancelled(true);
-                    e.getPlayer().sendMessage(ChatColor.RED + "Limite de tnt atteinte, tnt disponible dans " + getNextInteraction(playerTnt, waitTime));
+                    e.getPlayer().sendMessage(ChatColor.RED + "Limite de tnt atteinte, tnt disponible dans " + getNextInteraction(playerTnt, tntWaitTime));
                 } else {
-                    if (e.isCancelled()) return;
                     playerTnt.add(System.currentTimeMillis());
                 }
             } else {
-                if (e.getPlayer().isOp() || e.isCancelled()) return;
+                if (e.getPlayer().isOp()) return;
                 tntPlaced.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
             }
         } else {
@@ -63,18 +60,19 @@ public class PlayerListener implements Listener {
                     e.setCancelled(true);
                     e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte, interaction disponible dans " + getNextInteraction(playerInteractions, ONE_MINUTE_MILLIS));
                 } else {
-                    if (e.isCancelled()) return;
                     playerInteractions.add(System.currentTimeMillis());
                 }
             } else {
-                if (e.getPlayer().isOp() || e.isCancelled()) return;
+                if (e.getPlayer().isOp()) return;
                 interactions.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
             }
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlace(BlockPlaceEvent e) {
+
+        if (e.isCancelled()) return;
 
         if (e.getPlayer().hasPermission("default.use")) {
 
@@ -109,11 +107,10 @@ public class PlayerListener implements Listener {
                 e.setCancelled(true);
                 e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte, interaction disponible dans " + getNextInteraction(playerInteractions, waitTime));
             } else {
-                if (e.isCancelled()) return;
                 playerInteractions.add(System.currentTimeMillis());
             }
         } else {
-            if (e.getPlayer().isOp() || e.isCancelled()) return;
+            if (e.getPlayer().isOp()) return;
             interactions.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
         }
     }
