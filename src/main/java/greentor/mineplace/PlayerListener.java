@@ -21,7 +21,8 @@ public class PlayerListener implements Listener {
 
     private static final long ONE_MINUTE_MILLIS = 1000 * 60;
 
-    private static final HashMap<UUID, ArrayList<Long>> interactions = new HashMap<>();
+    private static final HashMap<UUID, ArrayList<Long>> placedBlocks = new HashMap<>();
+    private static final HashMap<UUID, ArrayList<Long>> brokenBlocks = new HashMap<>();
     private static final HashMap<UUID, ArrayList<Long>> tntPlaced = new HashMap<>();
 
     private void deleteExpired(ArrayList<Long> list, long delay) {
@@ -48,23 +49,21 @@ public class PlayerListener implements Listener {
                     playerTnt.add(System.currentTimeMillis());
                 }
             } else {
-                if (e.getPlayer().isOp()) return;
                 tntPlaced.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
             }
         } else {
             if (placeLimit == 0) return;
-            if (interactions.containsKey(e.getPlayer().getUniqueId())) {
-                ArrayList<Long> playerInteractions = interactions.get(e.getPlayer().getUniqueId());
+            if (placedBlocks.containsKey(e.getPlayer().getUniqueId())) {
+                ArrayList<Long> playerInteractions = placedBlocks.get(e.getPlayer().getUniqueId());
                 deleteExpired(playerInteractions, ONE_MINUTE_MILLIS);
                 if (playerInteractions.size() == placeLimit) {
                     e.setCancelled(true);
-                    e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte, interaction disponible dans " + getNextInteraction(playerInteractions, ONE_MINUTE_MILLIS));
+                    e.getPlayer().sendMessage(ChatColor.RED + "Limite de posage atteinte, posage disponible dans " + getNextInteraction(playerInteractions, ONE_MINUTE_MILLIS));
                 } else {
                     playerInteractions.add(System.currentTimeMillis());
                 }
             } else {
-                if (e.getPlayer().isOp()) return;
-                interactions.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
+                placedBlocks.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
             }
         }
     }
@@ -72,7 +71,7 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlace(BlockPlaceEvent e) {
 
-        if (e.isCancelled()) return;
+        if (e.isCancelled() || e.getPlayer().isOp()) return;
 
         if (e.getPlayer().hasPermission("default.use")) {
 
@@ -100,39 +99,38 @@ public class PlayerListener implements Listener {
     }
 
     public void handleBlockBreak(BlockBreakEvent e, long waitTime, int breakLimit) {
-        if (interactions.containsKey(e.getPlayer().getUniqueId())) {
-            ArrayList<Long> playerInteractions = interactions.get(e.getPlayer().getUniqueId());
-            deleteExpired(interactions.get(e.getPlayer().getUniqueId()), waitTime);
+        if (brokenBlocks.containsKey(e.getPlayer().getUniqueId())) {
+            ArrayList<Long> playerInteractions = brokenBlocks.get(e.getPlayer().getUniqueId());
+            deleteExpired(brokenBlocks.get(e.getPlayer().getUniqueId()), waitTime);
             if (playerInteractions.size() == breakLimit) {
                 e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.RED + "Limite d'interactions atteinte, interaction disponible dans " + getNextInteraction(playerInteractions, waitTime));
+                e.getPlayer().sendMessage(ChatColor.RED + "Limite de cassage atteinte, cassage disponible dans " + getNextInteraction(playerInteractions, waitTime));
             } else {
                 playerInteractions.add(System.currentTimeMillis());
             }
         } else {
-            if (e.getPlayer().isOp()) return;
-            interactions.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
+            brokenBlocks.put(e.getPlayer().getUniqueId(), new ArrayList<>(Collections.singletonList(System.currentTimeMillis())));
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent e) {
-        if (e.isCancelled()) return;
+        if (e.isCancelled() || e.getPlayer().isOp()) return;
         if (e.getPlayer().hasPermission("default.use")) {
 
-            handleBlockBreak(e, ONE_MINUTE_MILLIS , 5);
+            handleBlockBreak(e, ONE_MINUTE_MILLIS , 2);
 
         } else if (e.getPlayer().hasPermission("constructeur.use")) {
 
-            handleBlockBreak(e, ONE_MINUTE_MILLIS, 10);
+            handleBlockBreak(e, ONE_MINUTE_MILLIS, 3);
 
         } else if (e.getPlayer().hasPermission("ingenieur.use")) {
 
-            handleBlockBreak(e, ONE_MINUTE_MILLIS, 15);
+            handleBlockBreak(e, ONE_MINUTE_MILLIS, 4);
 
         } else if (e.getPlayer().hasPermission("architecte.use")) {
 
-            handleBlockBreak(e, ONE_MINUTE_MILLIS, 20);
+            handleBlockBreak(e, ONE_MINUTE_MILLIS, 5);
 
         }
     }
@@ -147,7 +145,7 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent e) {
         e.setQuitMessage(ChatColor.GREEN + "[" + ChatColor.RED + "-" + ChatColor.GREEN + "] " + e.getPlayer().getDisplayName());
     }
